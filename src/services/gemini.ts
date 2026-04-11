@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
 
 export interface ClothingSet {
   outer: string;
@@ -58,7 +58,7 @@ export async function getRecommendation(
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          briefing: { type: Type.STRING, description: "오늘의 서울 날씨 브리핑 (한 줄 요약)" },
+          briefing: { type: Type.STRING, description: "오늘의 날씨 브리핑 (한 줄 요약)" },
           classic: {
             type: Type.OBJECT,
             properties: {
