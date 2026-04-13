@@ -153,7 +153,7 @@ export interface OutfitImageRequest {
   specificItem?: string;
 }
 
-function pickImageForItem(item: string): string {
+export function pickImageForItem(item: string): string {
   const text = (item || "").toLowerCase();
 
   const imageMap: { keywords: string[]; url: string }[] = [
