@@ -7,6 +7,7 @@ export interface ClothingSet {
   top: string;
   bottom: string;
   shoes: string;
+  bag: string;
 }
 
 export interface WeatherRecommendation {
@@ -46,6 +47,7 @@ export async function getRecommendation(
     6. 스타일 구분: 
        - 클래식(Classic): 유행을 타지 않는 깔끔하고 정석적인 스타일 ${userStyle ? `(사용자의 스타일 '${userStyle}'을 클래식하게 해석)` : ""}
        - 최신 유행(Trendy): 현재 서울에서 가장 힙하고 유행하는 스타일 ${userStyle ? `(사용자의 스타일 '${userStyle}'을 트렌디하게 해석)` : ""}
+    7. 각 스타일별로 아우터, 상의, 하의, 신발뿐 아니라 가방(bag)도 반드시 하나 추천할 것.
 
     반드시 JSON 형식으로 응답하세요.
   `;
@@ -67,7 +69,7 @@ export async function getRecommendation(
               bottom: { type: Type.STRING },
               shoes: { type: Type.STRING },
             },
-            required: ["outer", "top", "bottom", "shoes"],
+            required: ["outer", "top", "bottom", "shoes", "bag"],
           },
           trendy: {
             type: Type.OBJECT,
@@ -77,7 +79,7 @@ export async function getRecommendation(
               bottom: { type: Type.STRING },
               shoes: { type: Type.STRING },
             },
-            required: ["outer", "top", "bottom", "shoes"],
+            required: ["outer", "top", "bottom", "shoes", "bag"],
           },
           essentials: {
             type: Type.ARRAY,
@@ -138,67 +140,67 @@ export async function fetchCurrentWeather(location: string): Promise<CurrentWeat
 
   return JSON.parse(response.text);
 }
-export async function generateOutfitImage(
-  clothingDescription: string,
-  condition: string
-): Promise<string> {
-  const text = clothingDescription.toLowerCase();
+export interface OutfitImageRequest {
+  title: string;
+  condition: string;
+  outer: string;
+  top: string;
+  bottom: string;
+  shoes: string;
+  bag: string;
+  specificItem?: string;
+}
+
+function pickImageForItem(item: string): string {
+  const text = (item || "").toLowerCase();
 
   const imageMap: { keywords: string[]; url: string }[] = [
+    {
+      keywords: ["트렌치", "코트", "coat", "trench"],
+      url: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["블레이저", "자켓", "재킷", "jacket", "blazer"],
+      url: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=800&q=80",
+    },
     {
       keywords: ["가디건", "cardigan"],
       url: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80",
     },
     {
-      keywords: ["후드", "후드티", "hoodie"],
-      url: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      keywords: ["맨투맨", "sweatshirt", "스웨트셔츠"],
-      url: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      keywords: ["셔츠", "shirt", "블라우스", "blouse"],
+      keywords: ["블라우스", "셔츠", "shirt", "blouse"],
       url: "https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      keywords: ["티셔츠", "t-shirt", "반팔"],
-      url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
     },
     {
       keywords: ["니트", "sweater", "스웨터"],
       url: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=800&q=80",
     },
     {
-      keywords: ["자켓", "재킷", "jacket", "블레이저", "blazer"],
-      url: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=800&q=80",
+      keywords: ["티셔츠", "반팔", "t-shirt"],
+      url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
     },
     {
-      keywords: ["코트", "coat", "트렌치"],
-      url: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80",
+      keywords: ["청치마", "데님 스커트", "데님치마", "스커트", "치마", "skirt"],
+      url: "https://images.unsplash.com/photo-1583496661160-fb5886a13d77?auto=format&fit=crop&w=800&q=80",
     },
     {
-      keywords: ["청바지", "데님", "jeans"],
+      keywords: ["청바지", "데님 팬츠", "데님", "jeans"],
       url: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=800&q=80",
     },
     {
-      keywords: ["슬랙스", "trousers", "팬츠", "pants"],
+      keywords: ["슬랙스", "팬츠", "trousers", "pants"],
       url: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      keywords: ["치마", "스커트", "skirt"],
-      url: "https://images.unsplash.com/photo-1583496661160-fb5886a13d77?auto=format&fit=crop&w=800&q=80",
     },
     {
       keywords: ["원피스", "dress"],
       url: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80",
     },
     {
-      keywords: ["운동화", "스니커즈", "sneakers"],
+      keywords: ["스니커즈", "운동화", "sneakers"],
       url: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
     },
     {
-      keywords: ["로퍼", "loafer", "구두"],
+      keywords: ["로퍼", "구두", "loafer"],
       url: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=80",
     },
     {
@@ -206,8 +208,8 @@ export async function generateOutfitImage(
       url: "https://images.unsplash.com/photo-1608256246200-53e8b47b2f80?auto=format&fit=crop&w=800&q=80",
     },
     {
-      keywords: ["캡모자", "모자", "cap", "hat"],
-      url: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=800&q=80",
+      keywords: ["토트백", "숄더백", "크로스백", "백", "가방", "bag"],
+      url: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
     },
   ];
 
@@ -218,4 +220,73 @@ export async function generateOutfitImage(
   }
 
   return "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&q=80";
+}
+
+function escapeHtml(text: string): string {
+  return String(text || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+export async function generateOutfitImage(
+  outfit: OutfitImageRequest
+): Promise<string> {
+  const outerImg = pickImageForItem(outfit.outer);
+  const topImg = pickImageForItem(outfit.top);
+  const bottomImg = pickImageForItem(outfit.bottom);
+  const shoesImg = pickImageForItem(outfit.shoes);
+  const bagImg = pickImageForItem(outfit.bag);
+
+  const accent = outfit.title.toLowerCase().includes("trendy") ? "#0ea5e9" : "#0f172a";
+  const safeSpecific = outfit.specificItem ? escapeHtml(outfit.specificItem) : "";
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="900" height="1100" viewBox="0 0 900 1100">
+      <rect width="900" height="1100" fill="#f8fafc"/>
+      <rect x="30" y="30" width="840" height="1040" rx="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+
+      <text x="70" y="90" font-size="34" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a">
+        ${escapeHtml(outfit.title)}
+      </text>
+      <text x="70" y="130" font-size="20" font-family="Arial, sans-serif" fill="${accent}">
+        날씨: ${escapeHtml(outfit.condition)}
+      </text>
+      ${
+        safeSpecific
+          ? `<text x="70" y="165" font-size="18" font-family="Arial, sans-serif" fill="#475569">
+               포함 아이템: ${safeSpecific}
+             </text>`
+          : ""
+      }
+
+      <image href="${outerImg}" x="70"  y="210" width="240" height="240" preserveAspectRatio="xMidYMid slice"/>
+      <image href="${topImg}"   x="330" y="210" width="240" height="240" preserveAspectRatio="xMidYMid slice"/>
+      <image href="${bottomImg}" x="590" y="210" width="240" height="240" preserveAspectRatio="xMidYMid slice"/>
+
+      <image href="${shoesImg}" x="200" y="500" width="240" height="240" preserveAspectRatio="xMidYMid slice"/>
+      <image href="${bagImg}"   x="460" y="500" width="240" height="240" preserveAspectRatio="xMidYMid slice"/>
+
+      <rect x="70" y="780" width="760" height="220" rx="24" fill="#f1f5f9"/>
+
+      <text x="100" y="835" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#64748b">아우터</text>
+      <text x="100" y="865" font-size="24" font-family="Arial, sans-serif" fill="#0f172a">${escapeHtml(outfit.outer)}</text>
+
+      <text x="100" y="915" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#64748b">상의</text>
+      <text x="100" y="945" font-size="24" font-family="Arial, sans-serif" fill="#0f172a">${escapeHtml(outfit.top)}</text>
+
+      <text x="470" y="835" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#64748b">하의</text>
+      <text x="470" y="865" font-size="24" font-family="Arial, sans-serif" fill="#0f172a">${escapeHtml(outfit.bottom)}</text>
+
+      <text x="470" y="915" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#64748b">신발 / 가방</text>
+      <text x="470" y="945" font-size="24" font-family="Arial, sans-serif" fill="#0f172a">${escapeHtml(outfit.shoes)} / ${escapeHtml(outfit.bag)}</text>
+    </svg>
+  `.trim();
+
+  const encoded =
+    typeof window !== "undefined"
+      ? window.btoa(unescape(encodeURIComponent(svg)))
+      : Buffer.from(svg, "utf-8").toString("base64");
+
+  return `data:image/svg+xml;base64,${encoded}`;
 }
