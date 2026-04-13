@@ -142,28 +142,49 @@ export async function generateOutfitImage(
   clothingDescription: string,
   condition: string
 ): Promise<string> {
-  const safeText = encodeURIComponent(
-    `추천 코디 이미지\n날씨: ${condition}\n${clothingDescription.slice(0, 120)}`
-  );
+  const safeCondition = String(condition ?? "").replace(/[<>&"]/g, "");
+  const safeDescription = String(clothingDescription ?? "")
+    .replace(/[<>&"]/g, "")
+    .slice(0, 180);
 
-  return `data:image/svg+xml;charset=UTF-8,
+  const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
       <rect width="800" height="1000" fill="#f8fafc"/>
       <rect x="40" y="40" width="720" height="920" rx="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="4"/>
-      <text x="400" y="180" text-anchor="middle" font-size="42" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a">
+      
+      <text x="400" y="140" text-anchor="middle" font-size="38" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a">
         Outfit Preview
       </text>
-      <text x="400" y="250" text-anchor="middle" font-size="28" font-family="Arial, sans-serif" fill="#0284c7">
-        ${condition}
+
+      <text x="400" y="200" text-anchor="middle" font-size="24" font-family="Arial, sans-serif" fill="#0284c7">
+        날씨: ${safeCondition}
       </text>
-      <foreignObject x="90" y="320" width="620" height="520">
+
+      <rect x="120" y="260" width="560" height="420" rx="24" fill="#e2e8f0"/>
+      <circle cx="400" cy="360" r="70" fill="#cbd5e1"/>
+      <rect x="315" y="430" width="170" height="180" rx="24" fill="#cbd5e1"/>
+      <rect x="260" y="430" width="55" height="160" rx="20" fill="#cbd5e1"/>
+      <rect x="485" y="430" width="55" height="160" rx="20" fill="#cbd5e1"/>
+      <rect x="335" y="610" width="45" height="120" rx="20" fill="#cbd5e1"/>
+      <rect x="420" y="610" width="45" height="120" rx="20" fill="#cbd5e1"/>
+
+      <foreignObject x="110" y="760" width="580" height="140">
         <div xmlns="http://www.w3.org/1999/xhtml"
-             style="font-family: Arial, sans-serif; font-size: 28px; line-height: 1.6; color: #334155; white-space: pre-wrap; text-align: center;">
-          ${decodeURIComponent(safeText).replace(/\n/g, "<br/>")}
+             style="font-family: Arial, sans-serif; font-size: 24px; line-height: 1.5; color: #334155; text-align: center; word-break: keep-all; padding: 0 12px;">
+          ${safeDescription}
         </div>
       </foreignObject>
-      <text x="400" y="900" text-anchor="middle" font-size="24" font-family="Arial, sans-serif" fill="#64748b">
-        AI 이미지 대신 배포용 미리보기
+
+      <text x="400" y="945" text-anchor="middle" font-size="20" font-family="Arial, sans-serif" fill="#64748b">
+        배포용 미리보기 이미지
       </text>
-    </svg>`;
+    </svg>
+  `.trim();
+
+  const encoded =
+    typeof window !== "undefined"
+      ? window.btoa(unescape(encodeURIComponent(svg)))
+      : Buffer.from(svg, "utf-8").toString("base64");
+
+  return `data:image/svg+xml;base64,${encoded}`;
 }
