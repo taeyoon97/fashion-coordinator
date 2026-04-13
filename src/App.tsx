@@ -408,6 +408,10 @@ export default function App() {
                             <p className="text-[10px] font-bold text-slate-400 uppercase">신발</p>
                             <p className="font-semibold text-slate-800">{recommendation.classic.shoes}</p>
                           </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase">가방</p>
+                            <p className="font-semibold text-slate-800">{recommendation.classic.bag}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -457,6 +461,10 @@ export default function App() {
                           <div>
                             <p className="text-[10px] font-bold text-slate-400 uppercase">신발</p>
                             <p className="font-semibold text-slate-800">{recommendation.trendy.shoes}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase">가방</p>
+                            <p className="font-semibold text-slate-800">{recommendation.trendy.bag}</p>
                           </div>
                         </div>
                       </div>
