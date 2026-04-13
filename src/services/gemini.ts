@@ -217,6 +217,5 @@ export async function generateOutfitImage(
     }
   }
 
-  // 아무 키워드도 못 찾았을 때 기본 이미지
   return "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&q=80";
 }
