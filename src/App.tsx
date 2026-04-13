@@ -91,14 +91,28 @@ export default function App() {
       );
       setRecommendation(result);
 
-      // Generate images for both styles
-      const classicDesc = `${gender}, ${userStyle ? `${userStyle} style (classic interpretation),` : ""} ${specificItem ? `including ${specificItem},` : ""} classic style: ${result.classic.outer}, ${result.classic.top}, ${result.classic.bottom}, ${result.classic.shoes}`;
-      const trendyDesc = `${gender}, ${userStyle ? `${userStyle} style (trendy interpretation),` : ""} ${specificItem ? `including ${specificItem},` : ""} trendy/street style: ${result.trendy.outer}, ${result.trendy.top}, ${result.trendy.bottom}, ${result.trendy.shoes}`;
-      
       const [cImg, tImg] = await Promise.all([
-        generateOutfitImage(classicDesc, condition),
-        generateOutfitImage(trendyDesc, condition)
-      ]);
+  generateOutfitImage({
+    title: "Classic Outfit",
+    condition,
+    outer: result.classic.outer,
+    top: result.classic.top,
+    bottom: result.classic.bottom,
+    shoes: result.classic.shoes,
+    bag: result.classic.bag,
+    specificItem,
+  }),
+  generateOutfitImage({
+    title: "Trendy Outfit",
+    condition,
+    outer: result.trendy.outer,
+    top: result.trendy.top,
+    bottom: result.trendy.bottom,
+    shoes: result.trendy.shoes,
+    bag: result.trendy.bag,
+    specificItem,
+  })
+]);
       
       setClassicImage(cImg);
       setTrendyImage(tImg);
