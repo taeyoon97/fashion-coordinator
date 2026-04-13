@@ -142,49 +142,81 @@ export async function generateOutfitImage(
   clothingDescription: string,
   condition: string
 ): Promise<string> {
-  const safeCondition = String(condition ?? "").replace(/[<>&"]/g, "");
-  const safeDescription = String(clothingDescription ?? "")
-    .replace(/[<>&"]/g, "")
-    .slice(0, 180);
+  const text = clothingDescription.toLowerCase();
 
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
-      <rect width="800" height="1000" fill="#f8fafc"/>
-      <rect x="40" y="40" width="720" height="920" rx="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="4"/>
-      
-      <text x="400" y="140" text-anchor="middle" font-size="38" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a">
-        Outfit Preview
-      </text>
+  const imageMap: { keywords: string[]; url: string }[] = [
+    {
+      keywords: ["가디건", "cardigan"],
+      url: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["후드", "후드티", "hoodie"],
+      url: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["맨투맨", "sweatshirt", "스웨트셔츠"],
+      url: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["셔츠", "shirt", "블라우스", "blouse"],
+      url: "https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["티셔츠", "t-shirt", "반팔"],
+      url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["니트", "sweater", "스웨터"],
+      url: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["자켓", "재킷", "jacket", "블레이저", "blazer"],
+      url: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["코트", "coat", "트렌치"],
+      url: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["청바지", "데님", "jeans"],
+      url: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["슬랙스", "trousers", "팬츠", "pants"],
+      url: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["치마", "스커트", "skirt"],
+      url: "https://images.unsplash.com/photo-1583496661160-fb5886a13d77?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["원피스", "dress"],
+      url: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["운동화", "스니커즈", "sneakers"],
+      url: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["로퍼", "loafer", "구두"],
+      url: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["부츠", "boots"],
+      url: "https://images.unsplash.com/photo-1608256246200-53e8b47b2f80?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      keywords: ["캡모자", "모자", "cap", "hat"],
+      url: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=800&q=80",
+    },
+  ];
 
-      <text x="400" y="200" text-anchor="middle" font-size="24" font-family="Arial, sans-serif" fill="#0284c7">
-        날씨: ${safeCondition}
-      </text>
+  for (const item of imageMap) {
+    if (item.keywords.some((keyword) => text.includes(keyword))) {
+      return item.url;
+    }
+  }
 
-      <rect x="120" y="260" width="560" height="420" rx="24" fill="#e2e8f0"/>
-      <circle cx="400" cy="360" r="70" fill="#cbd5e1"/>
-      <rect x="315" y="430" width="170" height="180" rx="24" fill="#cbd5e1"/>
-      <rect x="260" y="430" width="55" height="160" rx="20" fill="#cbd5e1"/>
-      <rect x="485" y="430" width="55" height="160" rx="20" fill="#cbd5e1"/>
-      <rect x="335" y="610" width="45" height="120" rx="20" fill="#cbd5e1"/>
-      <rect x="420" y="610" width="45" height="120" rx="20" fill="#cbd5e1"/>
-
-      <foreignObject x="110" y="760" width="580" height="140">
-        <div xmlns="http://www.w3.org/1999/xhtml"
-             style="font-family: Arial, sans-serif; font-size: 24px; line-height: 1.5; color: #334155; text-align: center; word-break: keep-all; padding: 0 12px;">
-          ${safeDescription}
-        </div>
-      </foreignObject>
-
-      <text x="400" y="945" text-anchor="middle" font-size="20" font-family="Arial, sans-serif" fill="#64748b">
-        배포용 미리보기 이미지
-      </text>
-    </svg>
-  `.trim();
-
-  const encoded =
-    typeof window !== "undefined"
-      ? window.btoa(unescape(encodeURIComponent(svg)))
-      : Buffer.from(svg, "utf-8").toString("base64");
-
-  return `data:image/svg+xml;base64,${encoded}`;
+  // 아무 키워드도 못 찾았을 때 기본 이미지
+  return "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&q=80";
 }
