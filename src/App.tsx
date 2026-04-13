@@ -16,7 +16,7 @@ import {
   Image as ImageIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { getRecommendation, generateOutfitImage, fetchCurrentWeather, type WeatherRecommendation } from "./services/gemini";
+import { getRecommendation, fetchCurrentWeather, pickImageForItem, type WeatherRecommendation } from "./services/gemini";
 
 const weatherBackgrounds: Record<string, string> = {
   "맑음": "linear-gradient(to bottom, #7dd3fc, #e0f2fe)",
@@ -37,8 +37,6 @@ export default function App() {
   const [dustLevel, setDustLevel] = useState<string>("보통");
   const [loading, setLoading] = useState(false);
   const [recommendation, setRecommendation] = useState<WeatherRecommendation | null>(null);
-  const [classicImage, setClassicImage] = useState<string | null>(null);
-  const [trendyImage, setTrendyImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fetchingWeather, setFetchingWeather] = useState(false);
 
@@ -91,31 +89,7 @@ export default function App() {
       );
       setRecommendation(result);
 
-      const [cImg, tImg] = await Promise.all([
-  generateOutfitImage({
-    title: "Classic Outfit",
-    condition,
-    outer: result.classic.outer,
-    top: result.classic.top,
-    bottom: result.classic.bottom,
-    shoes: result.classic.shoes,
-    bag: result.classic.bag,
-    specificItem,
-  }),
-  generateOutfitImage({
-    title: "Trendy Outfit",
-    condition,
-    outer: result.trendy.outer,
-    top: result.trendy.top,
-    bottom: result.trendy.bottom,
-    shoes: result.trendy.shoes,
-    bag: result.trendy.bag,
-    specificItem,
-  })
-]);
-      
-      setClassicImage(cImg);
-      setTrendyImage(tImg);
+    
     } catch (err) {
       console.error(err);
       setError("추천을 가져오는 중 오류가 발생했습니다. 다시 시도해주세요.");
@@ -390,29 +364,48 @@ export default function App() {
                         )}
                       </div>
 
-                      <div className="bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white/40 shadow-sm space-y-3">
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">아우터</p>
-                            <p className="font-semibold text-slate-800">{recommendation.classic.outer}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">상의</p>
-                            <p className="font-semibold text-slate-800">{recommendation.classic.top}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">하의</p>
-                            <p className="font-semibold text-slate-800">{recommendation.classic.bottom}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">신발</p>
-                            <p className="font-semibold text-slate-800">{recommendation.classic.shoes}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">가방</p>
-                            <p className="font-semibold text-slate-800">{recommendation.classic.bag}</p>
-                          </div>
+                      <div className="grid grid-cols-2 gap-3 p-4">
+                        <div>
+                          <img
+                            src={pickImageForItem(recommendation.classic.outer)}
+                            alt={recommendation.classic.outer}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">아우터</p>
                         </div>
+                        <div>
+                          <img
+                            src={pickImageForItem(recommendation.classic.top)}
+                            alt={recommendation.classic.top}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">상의</p>
+                        </div>
+                        <div>
+                          <img
+                            src={pickImageForItem(recommendation.classic.bottom)}
+                            alt={recommendation.classic.bottom}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">하의</p>
+                        </div>
+                        <div>
+                          <img
+                            src={pickImageForItem(recommendation.classic.shoes)}
+                            alt={recommendation.classic.shoes}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">신발</p>
+                        </div>
+                        <div className="col-span-2">
+                          <img
+                            src={pickImageForItem(recommendation.classic.bag)}
+                            alt={recommendation.classic.bag}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">가방</p>
+                        </div>
+                      </div>
                       </div>
                     </div>
 
@@ -444,29 +437,48 @@ export default function App() {
                         )}
                       </div>
 
-                      <div className="bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white/40 shadow-sm space-y-3">
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">아우터</p>
-                            <p className="font-semibold text-slate-800">{recommendation.trendy.outer}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">상의</p>
-                            <p className="font-semibold text-slate-800">{recommendation.trendy.top}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">하의</p>
-                            <p className="font-semibold text-slate-800">{recommendation.trendy.bottom}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">신발</p>
-                            <p className="font-semibold text-slate-800">{recommendation.trendy.shoes}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">가방</p>
-                            <p className="font-semibold text-slate-800">{recommendation.trendy.bag}</p>
-                          </div>
+                      <div className="grid grid-cols-2 gap-3 p-4">
+                        <div>
+                          <img
+                            src={pickImageForItem(recommendation.trendy.outer)}
+                            alt={recommendation.trendy.outer}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">아우터</p>
                         </div>
+                        <div>
+                          <img
+                            src={pickImageForItem(recommendation.trendy.top)}
+                            alt={recommendation.trendy.top}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">상의</p>
+                        </div>
+                        <div>
+                          <img
+                            src={pickImageForItem(recommendation.trendy.bottom)}
+                            alt={recommendation.trendy.bottom}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">하의</p>
+                        </div>
+                        <div>
+                          <img
+                            src={pickImageForItem(recommendation.trendy.shoes)}
+                            alt={recommendation.trendy.shoes}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">신발</p>
+                        </div>
+                        <div className="col-span-2">
+                          <img
+                            src={pickImageForItem(recommendation.trendy.bag)}
+                            alt={recommendation.trendy.bag}
+                            className="rounded-xl h-32 w-full object-cover"
+                          />
+                          <p className="text-[10px] mt-1 text-slate-500">가방</p>
+                        </div>
+                      </div>
                       </div>
                     </div>
                   </div>
