@@ -103,10 +103,26 @@ export interface CurrentWeather {
 
 export async function fetchCurrentWeather(location: string): Promise<CurrentWeather> {
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `What is the current temperature (Celsius), weather condition (one of: 맑음, 흐림, 비, 눈, 안개), and fine dust level (one of: 좋음, 보통, 나쁨, 매우 나쁨) in ${location} right now?`,
+    model: "gemini-2.5-flash",
+    contents: `
+      사용자의 지역은 "${location}" 입니다.
+      실시간 검색 도구 없이, 일반적인 계절/기후 상식을 바탕으로
+      현재 날씨를 "대략적으로 추정"해서 아래 JSON 형식으로만 답하세요.
+
+      규칙:
+      - temperature: 숫자만
+      - condition: 반드시 "맑음", "흐림", "비", "눈", "안개" 중 하나
+      - dustLevel: 반드시 "좋음", "보통", "나쁨", "매우 나쁨" 중 하나
+      - 설명 문장 없이 JSON만 출력
+
+      예시:
+      {
+        "temperature": 18,
+        "condition": "맑음",
+        "dustLevel": "보통"
+      }
+    `,
     config: {
-      tools: [{ googleSearch: {} }],
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -126,18 +142,28 @@ export async function generateOutfitImage(
   clothingDescription: string,
   condition: string
 ): Promise<string> {
-  const prompt = `A high-quality, stylish fashion photography of a person wearing: ${clothingDescription}. The setting is a street in Seoul during ${condition} weather. Professional lighting, aesthetic composition, full body shot.`;
+  const safeText = encodeURIComponent(
+    `추천 코디 이미지\n날씨: ${condition}\n${clothingDescription.slice(0, 120)}`
+  );
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-image",
-    contents: [{ text: prompt }],
-  });
-
-  for (const part of response.candidates?.[0]?.content?.parts || []) {
-    if (part.inlineData) {
-      return `data:image/png;base64,${part.inlineData.data}`;
-    }
-  }
-  
-  throw new Error("Failed to generate image");
+  return `data:image/svg+xml;charset=UTF-8,
+    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+      <rect width="800" height="1000" fill="#f8fafc"/>
+      <rect x="40" y="40" width="720" height="920" rx="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="4"/>
+      <text x="400" y="180" text-anchor="middle" font-size="42" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a">
+        Outfit Preview
+      </text>
+      <text x="400" y="250" text-anchor="middle" font-size="28" font-family="Arial, sans-serif" fill="#0284c7">
+        ${condition}
+      </text>
+      <foreignObject x="90" y="320" width="620" height="520">
+        <div xmlns="http://www.w3.org/1999/xhtml"
+             style="font-family: Arial, sans-serif; font-size: 28px; line-height: 1.6; color: #334155; white-space: pre-wrap; text-align: center;">
+          ${decodeURIComponent(safeText).replace(/\n/g, "<br/>")}
+        </div>
+      </foreignObject>
+      <text x="400" y="900" text-anchor="middle" font-size="24" font-family="Arial, sans-serif" fill="#64748b">
+        AI 이미지 대신 배포용 미리보기
+      </text>
+    </svg>`;
 }
